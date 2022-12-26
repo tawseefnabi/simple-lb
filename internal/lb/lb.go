@@ -41,6 +41,10 @@ func (lb *LoadBalancer) Listen(port int) {
 func (lb *LoadBalancer) HealthCheck(d time.Duration) {
 	log.Println("TIme after HealthCheck: ", d)
 	t := time.NewTicker(d)
-	fmt.Println("ttt", t)
+	for range t.C {
+		log.Println("Health check starting...")
+		lb.controller.HealthCheck()
+		log.Println("Health check completed")
+	}
 
 }

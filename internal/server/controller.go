@@ -2,11 +2,13 @@ package server
 
 import (
 	"container/list"
-	log "github.com/sirupsen/logrus"
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Controller struct {
@@ -80,4 +82,8 @@ func (c *Controller) getNextID() int {
 		return e.Value.(int)
 	}
 	return 0
+}
+
+func (c *Controller) HealthCheck() []string {
+	fmt.Println("HealthCheck func in controller")
 }
