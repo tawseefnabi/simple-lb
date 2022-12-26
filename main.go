@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/simple-lb/internal/lb"
 	"github.com/simple-lb/internal/utils"
@@ -25,8 +26,8 @@ func init() {
 func main() {
 	fmt.Println("Simple lb")
 	l := lb.New()
-	fmt.Println("lll", l)
 	l.Register(flagURL.URLs...)
+	go l.HealthCheck(1 * time.Second)
 	l.Listen(port)
 
 }

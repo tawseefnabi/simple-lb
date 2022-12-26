@@ -2,10 +2,12 @@ package lb
 
 import (
 	"fmt"
-	"github.com/simple-lb/internal/server"
 	"log"
 	"net/http"
 	"net/url"
+	"time"
+
+	"github.com/simple-lb/internal/server"
 )
 
 type LoadBalancer struct {
@@ -34,4 +36,11 @@ func (lb *LoadBalancer) Listen(port int) {
 	if err := http.ListenAndServe(addr, lb.controller.HTTPHandler()); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (lb *LoadBalancer) HealthCheck(d time.Duration) {
+	log.Println("TIme after HealthCheck: ", d)
+	t := time.NewTicker(d)
+	fmt.Println("ttt", t)
+
 }
