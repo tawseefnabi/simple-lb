@@ -2,7 +2,6 @@ package server
 
 import (
 	"container/list"
-	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -14,14 +13,14 @@ import (
 type Controller struct {
 	servers map[int]*server
 	upIDs   *list.List
-	dowsIDs *list.List
+	downIDs *list.List
 	mux     sync.Mutex
 }
 
 func NewController() *Controller {
 	return &Controller{
 		upIDs:   list.New(),
-		dowsIDs: list.New(),
+		downIDs: list.New(),
 	}
 }
 
@@ -57,7 +56,7 @@ func (c *Controller) down(id int) {
 	defer c.mux.Unlock()
 	c.mux.Lock()
 
-	c.dowsIDs.PushBack(id)
+	c.downIDs.PushBack(id)
 	for e := c.upIDs.Front(); e != nil; e = e.Next() {
 		if upID := e.Value.(int); upID == id {
 			c.upIDs.Remove(e)
@@ -85,5 +84,30 @@ func (c *Controller) getNextID() int {
 }
 
 func (c *Controller) HealthCheck() []string {
-	fmt.Println("HealthCheck func in controller")
+	defer c.mux.Unlock()
+	c.mux.Lock()
+	var (
+		msgs []string
+		next *list.Element
+	)
+	for e := c.upIDs.Front(); e != nil; e = next {
+		next = e.Next()
+		id := e.Value.(int)
+		if server := c.servers[id]; !server.IsAlive() {
+			c.downIDs.PushBack(id)
+			c.upIDs.Remove(e)
+			log.Warnf("[%s] down", server.url)
+
+		}
+	}
+	for e := c.downIDs.Front(); e != nil; e = next {
+		next = e.Next()
+		id := e.Value.(int)
+		if server := c.servers[id]; server.IsAlive() {
+			c.upIDs.PushBack(id)
+			c.downIDs.Remove(e)
+			log.Warnf("[%s] up", server.url)
+		}
+	}
+	return msgs
 }

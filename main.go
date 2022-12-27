@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("Simple lb")
 	l := lb.New()
 	l.Register(flagURL.URLs...)
-	go l.HealthCheck(1 * time.Second)
+	go l.HealthCheck(1 * time.Minute)
 	l.Listen(port)
 
 }
